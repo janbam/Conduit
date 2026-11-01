@@ -246,6 +246,10 @@ class TerminalKeyboardBar extends StatelessWidget {
     switch (action) {
       case TerminalKeyboardAction.escape:
         _sendKey(TerminalKey.escape);
+      case TerminalKeyboardAction.returnKey:
+        // Keep Return literal rather than applying the soft keyboard's policy.
+        controller.sendCarriageReturn();
+        _focusTerminal();
       case TerminalKeyboardAction.tab:
         _sendKey(TerminalKey.tab);
       case TerminalKeyboardAction.home:
@@ -591,6 +595,7 @@ const _iconKeyMinWidth = 44.0;
 const _textKeyMinWidth = 46.0;
 const _textKeyHorizontalPadding = 10.0;
 
+/// Resolves persisted custom Ctrl labels to terminal keys.
 TerminalKey? _controlKeyFor(String? key) {
   return switch (key) {
     'A' => TerminalKey.keyA,
@@ -619,6 +624,7 @@ TerminalKey? _controlKeyFor(String? key) {
     'X' => TerminalKey.keyX,
     'Y' => TerminalKey.keyY,
     'Z' => TerminalKey.keyZ,
+    'Esc' => TerminalKey.escape,
     _ => null,
   };
 }

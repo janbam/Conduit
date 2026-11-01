@@ -1051,6 +1051,7 @@ IconData _keyboardItemIcon(TerminalKeyboardItem item) {
 IconData _keyboardActionIcon(TerminalKeyboardAction action) {
   return switch (action) {
     TerminalKeyboardAction.escape => Icons.keyboard_rounded,
+    TerminalKeyboardAction.returnKey => Icons.keyboard_return_rounded,
     TerminalKeyboardAction.control => Icons.keyboard_control_key_rounded,
     TerminalKeyboardAction.alt => Icons.keyboard_option_key_rounded,
     TerminalKeyboardAction.tab => Icons.keyboard_tab_rounded,
