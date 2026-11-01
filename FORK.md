@@ -13,6 +13,15 @@ Last integrated upstream `master`: [`9cd2ff9`](https://github.com/gwitko/Conduit
 
 ## Active changes
 
+### 2026-11-01: Custom Ctrl+backslash key
+
+Commit subject: `feat: add custom Ctrl+backslash terminal key`.
+
+- The custom-key dialog's Ctrl dropdown includes **Ctrl+\**. Its saved control-key value is `\`. It sends FS (`0x1C`) directly through the existing text-input path because the current terminal library does not encode Ctrl+backslash key events. Like other row keys, it clears latched modifiers after sending.
+- This adds a custom-key option, not a new built-in key or a change to existing layouts.
+- Implementation: [control-key choices](lib/core/theme/terminal_appearance.dart) and [keyboard bar](lib/features/terminal/presentation/terminal_keyboard_bar.dart).
+- Regression checks: [editor selection and saved key](test/core/theme_sheet_test.dart) and [terminal wire output](test/features/terminal/terminal_test.dart).
+
 ### 2026-11-01: Return and custom Ctrl+Esc keys
 
 [PR #1](https://github.com/janbam/Conduit/pull/1), landed as [`073c2cd`](https://github.com/janbam/Conduit/commit/073c2cd).

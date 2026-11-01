@@ -358,6 +358,7 @@ const terminalKeyboardControlKeys = [
   'Y',
   'Z',
   'Esc',
+  '\\',
 ];
 
 extension TerminalKeyboardActionDetails on TerminalKeyboardAction {

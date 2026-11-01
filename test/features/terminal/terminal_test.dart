@@ -554,6 +554,12 @@ void main() {
                         label: 'C-esc',
                         controlKey: 'Esc',
                       ),
+                      TerminalKeyboardItem(
+                        id: 'custom:backslash',
+                        kind: TerminalKeyboardItemKind.customControl,
+                        label: 'C-\\',
+                        controlKey: '\\',
+                      ),
                       TerminalKeyboardItem.builtIn(
                         TerminalKeyboardAction.returnKey,
                       ),
@@ -576,6 +582,13 @@ void main() {
         await tester.tap(find.text('C-a'));
         await tester.tap(find.text('C-esc'));
 
+        // Ctrl+backslash must send FS and consume latched row modifiers.
+        controller.keyboard.ctrl = true;
+        controller.keyboard.alt = true;
+        await tester.tap(find.text('C-\\'));
+        expect(controller.keyboard.ctrl, isFalse);
+        expect(controller.keyboard.alt, isFalse);
+
         // Explicit Return must ignore both the Enter preference and row modifiers.
         controller.keyboard.ctrl = true;
         controller.keyboard.alt = true;
@@ -584,6 +597,7 @@ void main() {
           'git status\r',
           '\x01',
           '\x1b',
+          '\x1c',
           '\r',
         ]);
         expect(controller.keyboard.ctrl, isFalse);

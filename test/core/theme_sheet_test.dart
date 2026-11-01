@@ -133,9 +133,10 @@ void main() {
     expect(controller.terminalEnterSequence, TerminalEnterSequence.crlf);
   });
 
-  for (final controlMode in [false, true]) {
+  for (final controlKey in <String?>[null, 'Esc', '\\']) {
+    final controlMode = controlKey != null;
     testWidgets(
-      'key row editor saves ${controlMode ? 'Ctrl+Esc' : 'custom text'}',
+      'key row editor saves ${controlMode ? 'Ctrl+$controlKey' : 'custom text'}',
       (tester) async {
         final controller = ThemeController(InMemoryThemePreferences());
         await controller.load();
@@ -185,17 +186,17 @@ void main() {
 
         await tester.enterText(find.byType(TextField).at(0), 'gs');
         if (controlMode) {
-          // Select the special key through the same dropdown shown in the screenshot.
+          // Save the selected special key through the actual Ctrl dropdown.
           await tester.tap(find.text('Ctrl'));
           await tester.pumpAndSettle();
           await tester.tap(find.text('Ctrl+A'));
           await tester.pumpAndSettle();
           await tester.scrollUntilVisible(
-            find.text('Ctrl+Esc'),
+            find.text('Ctrl+$controlKey'),
             200,
             scrollable: find.byType(Scrollable).last,
           );
-          await tester.tap(find.text('Ctrl+Esc').last);
+          await tester.tap(find.text('Ctrl+$controlKey').last);
           await tester.pumpAndSettle();
         } else {
           await tester.enterText(find.byType(TextField).at(1), 'git status');
@@ -228,7 +229,7 @@ void main() {
         );
         expect(custom.label, 'gs');
         expect(custom.text, controlMode ? null : 'git status');
-        expect(custom.controlKey, controlMode ? 'Esc' : null);
+        expect(custom.controlKey, controlKey);
       },
     );
   }
