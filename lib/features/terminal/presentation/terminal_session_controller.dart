@@ -279,6 +279,13 @@ class TerminalSessionController extends ChangeNotifier {
     keyboard.clearModifiers();
   }
 
+  /// Sends exactly CR, ignoring the Enter preference and latched modifiers.
+  void sendCarriageReturn() {
+    // Retain transport and predictive-echo handling without rewriting CR.
+    _sendTerminalOutput('\r', normalizeEnter: false);
+    keyboard.clearModifiers();
+  }
+
   void sendControl(TerminalKey key) {
     terminal.keyInput(key, ctrl: true);
     keyboard.clearModifiers();
@@ -408,8 +415,10 @@ class TerminalSessionController extends ChangeNotifier {
     terminal.onOutput = _sendTerminalOutput;
   }
 
-  void _sendTerminalOutput(String data) {
-    final normalized = _normalizeEnterOutput(data);
+  /// Sends terminal input, optionally preserving an explicit wire sequence.
+  void _sendTerminalOutput(String data, {bool normalizeEnter = true}) {
+    // Only ordinary keyboard input follows the configured Enter sequence.
+    final normalized = normalizeEnter ? _normalizeEnterOutput(data) : data;
     if (_shouldSuppressDuplicateIosEnter(normalized)) {
       return;
     }

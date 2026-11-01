@@ -52,6 +52,9 @@ extension TerminalEnterSequenceDetails on TerminalEnterSequence {
 
 enum TerminalKeyboardAction {
   escape,
+
+  /// Sends a literal carriage return, independent of the Enter preference.
+  returnKey,
   control,
   alt,
   tab,
@@ -145,6 +148,7 @@ class TerminalKeyboardItem {
 
 const defaultTerminalKeyboardActions = [
   TerminalKeyboardAction.escape,
+  TerminalKeyboardAction.returnKey,
   TerminalKeyboardAction.control,
   TerminalKeyboardAction.alt,
   TerminalKeyboardAction.tab,
@@ -237,6 +241,7 @@ const tmuxTerminalKeyboardActions = [
 
 const defaultTerminalKeyboardItems = [
   TerminalKeyboardItem.builtIn(TerminalKeyboardAction.escape),
+  TerminalKeyboardItem.builtIn(TerminalKeyboardAction.returnKey),
   TerminalKeyboardItem.builtIn(TerminalKeyboardAction.control),
   TerminalKeyboardItem.builtIn(TerminalKeyboardAction.alt),
   TerminalKeyboardItem.builtIn(TerminalKeyboardAction.tab),
@@ -324,6 +329,7 @@ const defaultTerminalKeyboardRows = [
   TerminalKeyboardRow(items: defaultTerminalKeyboardItems),
 ];
 
+/// Supported custom Ctrl combinations, using labels persisted in key rows.
 const terminalKeyboardControlKeys = [
   'A',
   'B',
@@ -351,11 +357,13 @@ const terminalKeyboardControlKeys = [
   'X',
   'Y',
   'Z',
+  'Esc',
 ];
 
 extension TerminalKeyboardActionDetails on TerminalKeyboardAction {
   String get label => switch (this) {
     TerminalKeyboardAction.escape => 'Esc',
+    TerminalKeyboardAction.returnKey => 'Return',
     TerminalKeyboardAction.control => 'Ctrl',
     TerminalKeyboardAction.alt => 'Alt',
     TerminalKeyboardAction.tab => 'Tab',

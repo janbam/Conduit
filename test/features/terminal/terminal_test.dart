@@ -510,57 +510,90 @@ void main() {
       );
     });
 
-    testWidgets('sends custom keyboard row items', (tester) async {
-      final controller = _RecordingTerminalSessionController();
-      final focusNode = FocusNode();
-      addTearDown(focusNode.dispose);
-      addTearDown(controller.dispose);
+    testWidgets(
+      'row keys send custom controls and literal CR with CRLF configured',
+      (tester) async {
+        final session = FakePredictiveTerminalSession();
+        final controller = TerminalSessionController(
+          host: buildHost('row-keys'),
+          repository: ImmediateTerminalRepository(session),
+          enterSequence: TerminalEnterSequence.crlf,
+        );
+        final focusNode = FocusNode();
+        addTearDown(focusNode.dispose);
+        addTearDown(controller.dispose);
+        await tester.runAsync(controller.connect);
 
-      await tester.pumpWidget(
-        MaterialApp(
-          home: Scaffold(
-            body: TerminalKeyboardBar(
-              controller: controller,
-              focusNode: focusNode,
-              palette: AppPalette.catppuccin,
-              brightness: Brightness.dark,
-              rows: const [
-                TerminalKeyboardRow(
-                  items: [
-                    TerminalKeyboardItem(
-                      id: 'custom:text',
-                      kind: TerminalKeyboardItemKind.customText,
-                      label: 'gs',
-                      text: 'git status',
-                      submit: true,
-                    ),
-                    TerminalKeyboardItem(
-                      id: 'custom:ctrl',
-                      kind: TerminalKeyboardItemKind.customControl,
-                      label: 'C-a',
-                      controlKey: 'A',
-                    ),
-                  ],
-                ),
-              ],
-              globalSnippets: const [],
-              fullscreen: false,
-              onToggleFullscreen: () {},
-              onEnterTmuxScrollMode: () {},
-              onExitTmuxScrollMode: () {},
-              tmuxPrefixKey: TmuxPrefixKey.controlB,
-              tmuxScrollMode: false,
+        await tester.pumpWidget(
+          MaterialApp(
+            home: Scaffold(
+              body: TerminalKeyboardBar(
+                controller: controller,
+                focusNode: focusNode,
+                palette: AppPalette.catppuccin,
+                brightness: Brightness.dark,
+                rows: const [
+                  TerminalKeyboardRow(
+                    items: [
+                      TerminalKeyboardItem(
+                        id: 'custom:text',
+                        kind: TerminalKeyboardItemKind.customText,
+                        label: 'gs',
+                        text: 'git status',
+                        submit: true,
+                      ),
+                      TerminalKeyboardItem(
+                        id: 'custom:ctrl',
+                        kind: TerminalKeyboardItemKind.customControl,
+                        label: 'C-a',
+                        controlKey: 'A',
+                      ),
+                      TerminalKeyboardItem(
+                        id: 'custom:escape',
+                        kind: TerminalKeyboardItemKind.customControl,
+                        label: 'C-esc',
+                        controlKey: 'Esc',
+                      ),
+                      TerminalKeyboardItem.builtIn(
+                        TerminalKeyboardAction.returnKey,
+                      ),
+                    ],
+                  ),
+                ],
+                globalSnippets: const [],
+                fullscreen: false,
+                onToggleFullscreen: () {},
+                onEnterTmuxScrollMode: () {},
+                onExitTmuxScrollMode: () {},
+                tmuxPrefixKey: TmuxPrefixKey.controlB,
+                tmuxScrollMode: false,
+              ),
             ),
           ),
-        ),
-      );
+        );
 
-      await tester.tap(find.text('gs'));
-      await tester.tap(find.text('C-a'));
+        await tester.tap(find.text('gs'));
+        await tester.tap(find.text('C-a'));
+        await tester.tap(find.text('C-esc'));
 
-      expect(controller.sentText, ['git status\r']);
-      expect(controller.sentControlKeys, [TerminalKey.keyA]);
-    });
+        // Explicit Return must ignore both the Enter preference and row modifiers.
+        controller.keyboard.ctrl = true;
+        controller.keyboard.alt = true;
+        await tester.tap(find.text('Return'));
+        expect(session.sent.map(String.fromCharCodes), [
+          'git status\r',
+          '\x01',
+          '\x1b',
+          '\r',
+        ]);
+        expect(controller.keyboard.ctrl, isFalse);
+        expect(controller.keyboard.alt, isFalse);
+
+        // The ordinary Enter path must still honor the configured sequence.
+        controller.sendKey(TerminalKey.enter);
+        expect(session.sent.last, [0x0d, 0x0a]);
+      },
+    );
 
     testWidgets('snippets key sends host, global, and password entries', (
       tester,
