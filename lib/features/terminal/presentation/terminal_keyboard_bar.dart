@@ -397,11 +397,16 @@ class TerminalKeyboardBar extends StatelessWidget {
           _focusTerminal();
         }
       case TerminalKeyboardItemKind.customControl:
-        final key = _controlKeyFor(item.controlKey);
-        if (key != null) {
-          _sendControl(key);
+        // The terminal library does not encode Ctrl+backslash, so send FS directly.
+        if (item.controlKey == '\\') {
+          _sendText('\x1c');
         } else {
-          _focusTerminal();
+          final key = _controlKeyFor(item.controlKey);
+          if (key != null) {
+            _sendControl(key);
+          } else {
+            _focusTerminal();
+          }
         }
       case TerminalKeyboardItemKind.builtIn:
         final action = item.action;
